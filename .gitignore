@@ -3,3 +3,7 @@ test
 docs
 .vscode
 .env
+.attachignore
+.qualified-attach
+.gitignore
+docs
