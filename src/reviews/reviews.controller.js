@@ -14,10 +14,11 @@ async function findMovieReviews(req, res) {
 }
 async function doesReviewExist(req, res, next) {
   const { reviewId } = req.params;
-  req.log.info({ __filename }, reviewId);
+  console.trace({ __filename }, reviewId);
   if (!!reviewId) {
+    res.locals.reviewId = reviewId;
     const reviewArticle = await service.read(reviewId);
-    req.log.info({ __filename }, reviewArticle);
+    console.trace({ __filename }, reviewArticle);
     if (reviewArticle != undefined) {
       res.locals.review = reviewArticle;
       return next();
@@ -27,15 +28,25 @@ async function doesReviewExist(req, res, next) {
 }
 async function isReviewDataGood(req, res, next) {
   const { data } = req.body;
+  if (!'content' in data) return next({ status: 400, message: 'Missing content' });
+  if (!'score' in data) return next({ status: 400, message: 'Missing score' });
+  res.locals.bodyReview = data;
+  return next();
   //
 }
-async function update(req, res) {}
+async function update(req, res) {
+  const updateSuccess = await service.update(res.locals.bodyReview, res.locals.reviewId);
+  const data = await service.readPostupdate(updateSuccess, res.locals.reviewId);
+  console.trace({ __filename, data });
+  res.json({ data: addCritic(data)[0] });
+}
 async function destroy(req, res) {
   await service.delete(req.params.reviewId);
   res.sendStatus(204);
 }
 
 module.exports = {
-  findMovieReviews,
+  update: [doesReviewExist, isReviewDataGood, update],
   delete: [doesReviewExist, destroy],
+  findMovieReviews,
 };

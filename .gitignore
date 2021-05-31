@@ -1,9 +1,9 @@
+.qualified-attach
 node_modules
 test
 docs
 .vscode
 .env
 .attachignore
-.qualified-attach
-.gitignore
 docs
+.gitignore
